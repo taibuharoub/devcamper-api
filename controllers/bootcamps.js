@@ -2,6 +2,8 @@ const ErrorResponse = require("../utils/errorResponse")
 const asyncHandler = require("../middleware/async")
 const geocoder = require("../utils/geocoder");
 const Bootcamp = require("../models/Bootcamp");
+const { Query } = require("mongoose");
+const { populate } = require("../models/Bootcamp");
 
 //@desc     Get all bootcamps
 //@route    GET /api/v1/bootcamps
@@ -11,7 +13,7 @@ exports.getBootcamps = asyncHandler (async (req, res, next) => {
   //Copy req.query
   const reqQuery = { ...req.query }
   //Fields to exclude
-  const removeFields = ["select", "sort"];
+  const removeFields = ["select", "sort", "page", "limit"];
   //loop over removeFields and delete them from the reqQuery
   removeFields.forEach(param => delete reqQuery[param]);
   //Create query string
@@ -20,7 +22,7 @@ exports.getBootcamps = asyncHandler (async (req, res, next) => {
   queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
   
   //Finding Resource
-  query = Bootcamp.find(JSON.parse(queryStr));
+  query = Bootcamp.find(JSON.parse(queryStr)).populate("courses");
 
   //Select Fields
   if(req.query.select) {
@@ -36,12 +38,39 @@ exports.getBootcamps = asyncHandler (async (req, res, next) => {
     query = query.sort("-createdAt");
   }
 
+  //Pagination
+  const page = parseInt(req.query.page, 10) || 1;
+  const limit = parseInt(req.query.limit, 10) || 25;
+  const startIndex = (page-1) * limit;
+  const endIndex = page * limit;
+  const total = await Bootcamp.countDocuments(); 
+
+  query = query.skip(startIndex).limit(limit);
+
   //Executing query
   const bootcamps = await query;
+
+  //Pagination result
+  const pagination = {};
+
+  if(endIndex < total) {
+    pagination.next = {
+      page: page + 1,
+      limit: limit
+    }
+  }
+
+  if(startIndex > 0) {
+    pagination.prev = {
+      page: page - 1,
+      limit: limit
+    }
+  }
 
     res.status(200).json({
       success: true,
       count: bootcamps.length,
+      pagination: pagination,
       data: bootcamps,
     });
 });
@@ -101,11 +130,13 @@ exports.updateBootcamp = asyncHandler (async (req, res, next) => {
 //@access   Private
 exports.deleteBootcamp = asyncHandler (async (req, res, next) => {
     const id = req.params.id;
-    const bootcamp = await Bootcamp.findByIdAndDelete(id)
+    const bootcamp = await Bootcamp.findById(id)
   
     if (!bootcamp) {
       return next(new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404));
     }
+
+    bootcamp.remove();
   
     res.status(200).json({
       status: true,
