@@ -2,6 +2,7 @@ const slugify = require("slugify");
 const mongoose = require("mongoose");
 const geocoder = require("../utils/geocoder")
 const Course = require("../models/Course")
+const User = require("../models/User")
 const Schema = mongoose.Schema;
 
 const BootcampSchema = new Schema({
@@ -100,6 +101,11 @@ const BootcampSchema = new Schema({
     type: Date,
     default: Date.now,
   },
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    required: true
+},
 }, {
   toJSON: { virtuals: true },
   toObject: { virtuals: true }

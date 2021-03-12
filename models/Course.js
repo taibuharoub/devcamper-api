@@ -2,6 +2,7 @@ const { strikethrough } = require("colors");
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const Bootcamp = require("./Bootcamp")
+const User = require("./User")
 
 const CourseSchema = new Schema({
     title: {
@@ -37,6 +38,11 @@ const CourseSchema = new Schema({
     bootcamp: {
         type: Schema.Types.ObjectId,
         ref: "Bootcamp",
+        required: true
+    },
+    user: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
         required: true
     }
 })
