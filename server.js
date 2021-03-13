@@ -18,7 +18,8 @@ connectDB();
 const bootcacampRoutes = require("./routes/bootcamps");
 const courseRoutes = require("./routes/courses")
 const authRoutes = require("./routes/auth");
-const userRoutes = require("./routes/users")
+const userRoutes = require("./routes/users");
+const reviewRoutes = require("./routes/reviews");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -46,6 +47,7 @@ app.use("/api/v1/bootcamps", bootcacampRoutes);
 app.use("/api/v1/courses", courseRoutes)
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/reviews", reviewRoutes);
 
 app.use(errorHandler)
 
