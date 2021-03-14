@@ -51,6 +51,29 @@ app.use(mongoSanitize());
 //Set security headers
 app.use(helmet());
 
+const scriptSrcUrls = [
+  "https://mighty-lowlands-40859.herokuapp.com/"
+]
+
+app.use(
+  helmet.contentSecurityPolicy({
+      directives: {
+          defaultSrc: [],
+          connectSrc: ["'self'"],
+          scriptSrc: ["'unsafe-inline'", "'self'", ...scriptSrcUrls],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          workerSrc: ["'self'", "blob:"],
+          objectSrc: [],
+          imgSrc: [
+              "'self'",
+              "blob:",
+              "data:"
+          ],
+          fontSrc: ["'self'"],
+      },
+  })
+);
+
 //Prevent XSS attacks
 app.use(xss());
 
